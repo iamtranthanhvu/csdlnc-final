@@ -22,9 +22,10 @@ Nhu cầu mua sắm thiết bị điện tử (laptop, smartphone, camera) ngày
 | Message Queue | RabbitMQ 3.13 | Điều tiết lưu lượng |
 | SQL ORM | Prisma | 2 client riêng cho master/slave |
 | NoSQL ODM | Mongoose | Product document schema |
-| Authentication | JWT (jsonwebtoken) | Access token + Refresh token |
+| Authentication | JWT (`@fastify/jwt`) | Access token + Refresh token |
+| Email | Nodemailer | Gửi email thông báo sub-order cho vendor |
 | Validation | Zod | Schema validation |
-| Containerization | Docker + Docker Compose | Môi trường dev |
+| Containerization | Docker + Docker Compose | Môi trường dev/prod tách riêng |
 
 ## Phạm vi hệ thống (scope)
 

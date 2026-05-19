@@ -84,6 +84,19 @@ BEGIN (single transaction):
   6. [Payment confirmed] → UPDATE orders SET status=confirmed
   7. Trigger fn_deduct_inventory() tự kích hoạt
 COMMIT
+
+Sau COMMIT — gửi email thông báo cho từng vendor:
+  8. SELECT email FROM vendors WHERE vendor_id IN (501, 502)
+  9. Gửi email cho GearVN (vendor_id=501):
+       To: gearvn@gearvn.com
+       Subject: "[TechShop] Đơn hàng mới #SO-201 cần xử lý"
+       Body: sub_order_id, danh sách sản phẩm, subtotal, địa chỉ giao
+  10. Gửi email cho ThinkPro (vendor_id=502):
+       To: order@thinkpro.vn
+       Subject: "[TechShop] Đơn hàng mới #SO-202 cần xử lý"
+       Body: sub_order_id, danh sách sản phẩm, subtotal, địa chỉ giao
+
+  ⚠ Email gửi NGOÀI transaction (sau COMMIT) — lỗi email không ảnh hưởng đơn hàng.
 ```
 
 ### Output
@@ -92,14 +105,14 @@ COMMIT
   "order_id": 1004,
   "total_price": 97000000,
   "sub_orders": [
-    { "vendor": "GearVN Store", "subtotal": 45000000 },
-    { "vendor": "ThinkPro",     "subtotal": 52000000 }
+    { "sub_order_id": 201, "vendor": "GearVN Store", "subtotal": 45000000, "email_sent": true },
+    { "sub_order_id": 202, "vendor": "ThinkPro",     "subtotal": 52000000, "email_sent": true }
   ]
 }
 ```
 
 ### Rollback scenario
-Nếu tồn kho sản phẩm 2003 hết → **toàn bộ transaction rollback**, không tạo order nào.
+Nếu tồn kho sản phẩm 2003 hết → **toàn bộ transaction rollback**, không tạo order nào, không gửi email.
 
 ---
 

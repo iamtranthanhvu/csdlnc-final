@@ -1,0 +1,102 @@
+services:
+  csdl_db_master:
+    image: postgres:16
+    container_name: csdl_db_master
+    env_file:
+      - .env
+    volumes:
+      - pg-master-prod:/var/lib/postgresql/data
+      - ./scripts/init-master.sql:/docker-entrypoint-initdb.d/01-init.sql
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  csdl_db_slave:
+    image: postgres:16
+    container_name: csdl_db_slave
+    env_file:
+      - .env
+    volumes:
+      - pg-slave-prod:/var/lib/postgresql/data
+    depends_on:
+      - csdl_db_master
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  csdl_mongodb:
+    image: mongo:7
+    container_name: csdl_mongodb
+    env_file:
+      - .env
+    volumes:
+      - mongo-prod:/data/db
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  csdl_queue:
+    image: rabbitmq:3.13-management
+    container_name: csdl_queue
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  csdl_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: csdl_server
+    env_file:
+      - .env
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    depends_on:
+      csdl_db_master:
+        condition: service_started
+      csdl_db_slave:
+        condition: service_started
+      csdl_mongodb:
+        condition: service_started
+      csdl_queue:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+  csdl_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: csdl_worker
+    env_file:
+      - .env
+    environment:
+      PROD_COMMAND: ${PROD_WORKER_COMMAND}
+    depends_on:
+      csdl_db_master:
+        condition: service_started
+      csdl_mongodb:
+        condition: service_started
+      csdl_queue:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - prod-network
+
+volumes:
+  pg-master-prod:
+  pg-slave-prod:
+  mongo-prod:
+
+networks:
+  prod-network:
+    driver: bridge

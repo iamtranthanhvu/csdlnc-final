@@ -31,10 +31,10 @@ INSERT INTO user_roles (user_id, role_id) VALUES
 
 ### Vendors
 ```sql
-INSERT INTO vendors (name, warehouse_address) VALUES
-  ('GearVN Store', '123 Hoàng Hoa Thám, Tân Bình, HCM'),
-  ('ThinkPro',     '50 Nguyễn Văn Huyên, Cầu Giấy, HN'),
-  ('Cellphones S', '75 Bạch Đằng, Bình Thạnh, HCM');
+INSERT INTO vendors (name, email, warehouse_address) VALUES
+  ('GearVN Store', 'order@gearvn.com',      '123 Hoàng Hoa Thám, Tân Bình, HCM'),
+  ('ThinkPro',     'order@thinkpro.vn',     '50 Nguyễn Văn Huyên, Cầu Giấy, HN'),
+  ('Cellphones S', 'order@cellphones.com',  '75 Bạch Đằng, Bình Thạnh, HCM');
 ```
 
 ### Inventory

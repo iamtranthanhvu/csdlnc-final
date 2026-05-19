@@ -27,7 +27,7 @@ erDiagram
     vendors {
         int vendor_id PK
         varchar name
-
+        varchar email
         text warehouse_address
         boolean is_active
         timestamptz created_at
@@ -134,6 +134,7 @@ CREATE TABLE user_roles (
 CREATE TABLE vendors (
     vendor_id         SERIAL PRIMARY KEY,
     name              VARCHAR(150) NOT NULL,
+    email             VARCHAR(150),           -- nhận thông báo sub-order mới
     warehouse_address TEXT,
     is_active         BOOLEAN DEFAULT TRUE,
     created_at        TIMESTAMPTZ DEFAULT NOW()

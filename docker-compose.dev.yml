@@ -1,0 +1,144 @@
+services:
+  csdl_db_master:
+    image: postgres:16
+    container_name: csdl_db_master
+    command: >
+      postgres
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+    env_file:
+      - .env
+    volumes:
+      - pg-master-dev:/var/lib/postgresql/data
+      - ./scripts/init-master.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./scripts/init-master-replication.sh:/docker-entrypoint-initdb.d/02-replication.sh
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+  csdl_db_slave:
+    image: postgres:16
+    container_name: csdl_db_slave
+    entrypoint: ["/scripts/init-slave.sh"]
+    env_file:
+      - .env
+    environment:
+      PG_MASTER_HOST: csdl_db_master
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    volumes:
+      - pg-slave-dev:/var/lib/postgresql/data
+      - ./scripts/init-slave.sh:/scripts/init-slave.sh
+    depends_on:
+      csdl_db_master:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+  csdl_mongodb:
+    image: mongo:7
+    container_name: csdl_mongodb
+    env_file:
+      - .env
+    volumes:
+      - mongo-dev:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/01-seed.js
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+  csdl_queue:
+    image: rabbitmq:3.13-management
+    container_name: csdl_queue
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+  csdl_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: csdl_server
+    env_file:
+      - .env
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    volumes:
+      - .:/app
+    depends_on:
+      csdl_db_master:
+        condition: service_started
+      csdl_db_slave:
+        condition: service_healthy
+      csdl_mongodb:
+        condition: service_started
+      csdl_queue:
+        condition: service_healthy
+    networks:
+      - dev-network
+
+  csdl_prisma:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: csdl_prisma
+    env_file:
+      - .env
+    environment:
+      DEV_COMMAND: npx prisma studio --port 5555 --browser none
+    ports:
+      - '5555:5555'
+    volumes:
+      - .:/app
+    depends_on:
+      csdl_db_master:
+        condition: service_started
+    networks:
+      - dev-network
+
+  csdl_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: csdl_worker
+    env_file:
+      - .env
+    environment:
+      DEV_COMMAND: ${DEV_WORKER_COMMAND}
+    volumes:
+      - .:/app
+    depends_on:
+      csdl_db_master:
+        condition: service_started
+      csdl_db_slave:
+        condition: service_healthy
+      csdl_mongodb:
+        condition: service_started
+      csdl_queue:
+        condition: service_healthy
+    networks:
+      - dev-network
+
+volumes:
+  pg-master-dev:
+  pg-slave-dev:
+  mongo-dev:
+
+networks:
+  dev-network:
+    driver: bridge

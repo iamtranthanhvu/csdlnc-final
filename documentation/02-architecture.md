@@ -159,13 +159,22 @@ Admin → React Admin → API Server
 ```typescript
 // src/db/prisma.ts — hai PrismaClient trỏ đến 2 DB URL khác nhau
 import { PrismaClient } from '@prisma/client';
+import { config } from '../config';
 
 export const masterPrisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_MASTER_URL } },
+  datasources: {
+    db: {
+      url: `postgresql://${config.pg.user}:${config.pg.password}@${config.pg.masterHost}:${config.pg.masterPort}/${config.pg.database}`,
+    },
+  },
 });
 
 export const slavePrisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_SLAVE_URL } },
+  datasources: {
+    db: {
+      url: `postgresql://${config.pg.readonlyUser}:${config.pg.readonlyPassword}@${config.pg.slaveHost}:${config.pg.slavePort}/${config.pg.database}`,
+    },
+  },
   // Slave là read-only — PostgreSQL sẽ reject write nếu nhầm
 });
 
