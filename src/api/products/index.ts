@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth';
 import * as productService from '../../services/product.service';
@@ -44,7 +44,7 @@ export async function productRoutes(app: FastifyInstance) {
             data: {
               type: 'object',
               properties: {
-                products: { type: 'array', items: { type: 'object' } },
+                products: { type: 'array', items: { type: 'object', additionalProperties: true } },
                 total: { type: 'integer' },
                 page: { type: 'integer' },
                 limit: { type: 'integer' },
@@ -90,7 +90,7 @@ export async function productRoutes(app: FastifyInstance) {
                 name: { type: 'string' },
                 category: { type: 'string' },
                 brand: { type: 'string' },
-                specs: { type: 'object' },
+                specs: { type: 'object', additionalProperties: true },
                 inventory: { type: 'array', items: inventoryItemSchema },
               },
             },
@@ -129,7 +129,7 @@ export async function productRoutes(app: FastifyInstance) {
         response: {
           200: {
             type: 'object',
-            properties: { data: { type: 'array', items: { type: 'object' } } },
+            properties: { data: { type: 'array', items: { type: 'object', additionalProperties: true } } },
           },
           401: errorSchema,
         },

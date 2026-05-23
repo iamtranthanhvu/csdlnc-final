@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth';
 import * as orderService from '../../services/order.service';
@@ -54,7 +54,7 @@ export async function orderRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        201: { type: 'object', properties: { data: { type: 'object' } } },
+        201: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
         404: errorSchema,
         409: errorSchema,
       },
@@ -87,7 +87,7 @@ export async function orderRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        200: { type: 'object', properties: { data: { type: 'object' } } },
+        200: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
         404: errorSchema,
         409: errorSchema,
       },
@@ -117,7 +117,7 @@ export async function orderRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        200: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } },
+        200: { type: 'object', properties: { data: { type: 'array', items: { type: 'object', additionalProperties: true } } } },
       },
     },
     preHandler: [authenticate],
@@ -137,7 +137,7 @@ export async function orderRoutes(app: FastifyInstance) {
         properties: { order_id: { type: 'integer', example: 1 } },
       },
       response: {
-        200: { type: 'object', properties: { data: { type: 'object' } } },
+        200: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
         404: errorSchema,
       },
     },

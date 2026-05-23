@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth';
 import { requireRole } from '../../middleware/rbac';
@@ -68,7 +68,7 @@ export async function adminRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        200: { type: 'object', properties: { data: { type: 'object' } } },
+        200: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
         401: errorSchema,
         403: errorSchema,
       },
@@ -100,7 +100,7 @@ export async function adminRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        200: { type: 'object', properties: { data: { type: 'object' } } },
+        200: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
         404: errorSchema,
       },
     },
@@ -135,7 +135,7 @@ export async function adminRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        200: { type: 'object', properties: { data: { type: 'object' } } },
+        200: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
       },
     },
   }, async (request, reply) => {
@@ -250,7 +250,7 @@ export async function adminRoutes(app: FastifyInstance) {
       summary: 'Danh sach vendors',
       security,
       response: {
-        200: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } },
+        200: { type: 'object', properties: { data: { type: 'array', items: { type: 'object', additionalProperties: true } } } },
       },
     },
   }, async (request, reply) => {
@@ -274,7 +274,7 @@ export async function adminRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        201: { type: 'object', properties: { data: { type: 'object' } } },
+        201: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
       },
     },
   }, async (request, reply) => {
@@ -307,7 +307,7 @@ export async function adminRoutes(app: FastifyInstance) {
         },
       },
       response: {
-        200: { type: 'object', properties: { data: { type: 'object' } } },
+        200: { type: 'object', properties: { data: { type: 'object', additionalProperties: true } } },
       },
     },
   }, async (request, reply) => {
